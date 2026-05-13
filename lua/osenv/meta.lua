@@ -7,7 +7,7 @@
 ---with arguments, adds to (or overwrites) the environment and returns self
 ---
 ---Also allows:
----osenv[nil] = { "VARNAMES", "TO_UNSET" }
+---osenv[{}] = { "VARNAMES", "TO_UNSET" }
 ---
 ---names must be valid environment variable names
 ---values may be strings, numbers, or nil (or anything with a __tostring metamethod)

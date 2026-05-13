@@ -113,8 +113,8 @@ static int has_tostring(lua_State *L, int idx) {
 }
 
 static int env__newindex(lua_State *L) {
-    // CASE 1: bulk unset via env[nil] = {...} or env[nil] = "VAR"
-    if (lua_isnil(L, 2)) {
+    // CASE 1: bulk unset via env[{}] = {...} or env[{}] = "VAR"
+    if (lua_istable(L, 2)) {
         if (lua_type(L, 3) == LUA_TSTRING) {
             const char *key = lua_tostring(L, 3);
             return env_unset(L, key);
