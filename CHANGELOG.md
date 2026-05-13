@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/BirdeeHub/lua-osenv/compare/v1.0.2...v1.0.3) (2026-05-13)
+
+
+### Bug Fixes
+
+* **type annotation:** type annotation was incorrect ([e3a7cef](https://github.com/BirdeeHub/lua-osenv/commit/e3a7ceff823f1c05a0d780ea6121a64b1d1283be))
+* **type annotation:** type annotation was incorrect ([1276705](https://github.com/BirdeeHub/lua-osenv/commit/1276705af586734dfeec466b3874297783378040))
+
 ## [1.0.2](https://github.com/BirdeeHub/lua-osenv/compare/v1.0.1...v1.0.2) (2026-05-13)
 
 
