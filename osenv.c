@@ -9,9 +9,7 @@
 static void clear_process_env(void) {
 #ifdef _WIN32
     LPCH env = GetEnvironmentStringsA();
-    if (!env)
-        return;
-
+    if (!env) return;
     for (LPCH p = env; *p; p += strlen(p) + 1) {
         const char *eq = strchr(p, '=');
 
@@ -27,10 +25,31 @@ static void clear_process_env(void) {
 
         SetEnvironmentVariableA(key, NULL);
     }
-
     FreeEnvironmentStringsA(env);
 #else
+#ifdef __GLIBC__
     clearenv();
+#else
+    extern char **environ;
+    if (!environ) return;
+    while (*environ) {
+        const char *entry = *environ;
+        const char *eq = strchr(entry, '=');
+
+        if (!eq) {
+            unsetenv(entry);
+            continue;
+        }
+
+        size_t len = (size_t)(eq - entry);
+
+        char key[len + 1];
+        memcpy(key, entry, len);
+        key[len] = '\0';
+
+        unsetenv(key);
+    }
+#endif
 #endif
 }
 
