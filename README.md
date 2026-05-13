@@ -67,7 +67,7 @@ print(os.env.MY_META_VAR)
 os.env.MY_VAR = nil
 
 ---Special mass unset syntax:
-osenv[nil] = { "MY_NUMBER_VAR", "MY_META_VAR" }
+os.env[nil] = { "MY_NUMBER_VAR", "MY_META_VAR" }
 
 -- with no arguments, returns the current environment
 local current_env = os.env()
