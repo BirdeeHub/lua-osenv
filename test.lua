@@ -69,8 +69,11 @@ test("require('osenv') tests", function()
 	local env = require("osenv")
 	env.TESTVARIABLE = "HELLO"
 	ok(env.TESTVARIABLE == os.getenv("TESTVARIABLE"), "osenv should get the env var")
-	env.TESTVARIABLE = nil
-	ok(env.TESTVARIABLE == nil, "osenv should be removed")
+	env[{}] = "TESTVARIABLE"
+	ok(env.TESTVARIABLE == nil, "osenv should be removed (via the special syntax)")
+	env.TESTVARIABLE = "HELLO"
+	env[{}] = { "TESTVARIABLE" }
+	ok(env.TESTVARIABLE == nil, "osenv should be removed (via the special syntax again)")
 	ok(os.getenv("TESTVARIABLE") == nil, "os.getenv('thevar') should be removed just like the env var")
 end)
 
