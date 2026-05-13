@@ -8,9 +8,12 @@
 ---
 ---Also allows:
 ---osenv[nil] = { "VARNAMES", "TO_UNSET" }
+---
+---names must be valid environment variable names
+---values may be strings, numbers, or nil (or anything with a __tostring metamethod)
 ---@alias osenv
----| table<string, string|number|nil>
----| fun(env?: table<string, string|number>, overwrite?: boolean):(table<string, string>|osenv)
+---| table<string|nil, (string|number|nil|any)>
+---| fun(env?: table<string, (string|number|any)>, overwrite?: boolean):(table<string, string>|osenv)
 
 ---@type osenv
 return require('osenv')
