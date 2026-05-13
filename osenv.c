@@ -105,14 +105,18 @@ static int env_get_all(lua_State *L) {
 
 static int has_tostring(lua_State *L, int idx) {
     if (!lua_getmetatable(L, idx)) return 0;
-    int has = 0;
     lua_getfield(L, -1, "__tostring");
-    has = !lua_isnil(L, -1);
-    lua_pop(L, 2);
-    return has;
+    if (!lua_isnil(L, -1)) {
+        lua_remove(L, -2);
+        return 1;
+    } else {
+        lua_pop(L, 2);
+        return 0;
+    }
 }
 
 static int env__newindex(lua_State *L) {
+    lua_settop(L, 3);
     // CASE 1: bulk unset via env[{}] = {...} or env[{}] = "VAR"
     if (lua_istable(L, 2)) {
         if (lua_type(L, 3) == LUA_TSTRING) {
@@ -139,8 +143,6 @@ static int env__newindex(lua_State *L) {
     } else if (vt == LUA_TSTRING || vt == LUA_TNUMBER) {
         return env_set(L, key, lua_tostring(L, 3));
     } else if (has_tostring(L, 3)) {
-        lua_getglobal(L, "tostring");
-        if (!lua_isfunction(L, -1)) return luaL_error(L, "using the __tostring metamethod depends on the 'tostring' global function being available");
         lua_insert(L, 3);
         lua_call(L, 1, 1);
         return env_set(L, key, lua_tostring(L, 3));
@@ -151,6 +153,7 @@ static int env__newindex(lua_State *L) {
 }
 
 static int env__index(lua_State *L) {
+    lua_settop(L, 2);
     const char *key = luaL_checkstring(L, 2);
     const char *val = getenv(key);
     if (val)
@@ -181,8 +184,6 @@ static int env__call(lua_State *L) {
         if (vt == LUA_TSTRING || vt == LUA_TNUMBER) {
             env_set(L, key, lua_tostring(L, -1));
         } else if (has_tostring(L, -1)) {
-            lua_getglobal(L, "tostring");
-            if (!lua_isfunction(L, -1)) return luaL_error(L, "using the __tostring metamethod depends on the 'tostring' global function being available");
             lua_insert(L, -2);
             lua_call(L, 1, 1);
             env_set(L, key, lua_tostring(L, -1));
