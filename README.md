@@ -19,7 +19,6 @@ luarocks install osenv
 * Flake or flakeless support, both methods return according to the [flake outputs schema](https://wiki.nixos.org/wiki/Flakes).
 * Overlay and packages available for Lua versions 5.1+, as well as a neovim plugin.
 * Dev shell included for building via `make`.
-* `nix build nixpkgs#${lua,luajit,lua5_${1..5}}.pkgs.osenv`
 
 ### Using Make
 
@@ -38,8 +37,6 @@ Build outputs to `DESTDIR`, which defaults to `./lua`, creating `./lua/osenv.so`
 
 ```bash
 make build LUA_INCDIR=/path/to/lua/includes
-# or luajit
-make build LUA_INCDIR=/path/to/lua/includes LUA=luajit
 ```
 
 **Add to Lua's `package.cpath` after building:**
