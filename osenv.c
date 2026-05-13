@@ -128,7 +128,7 @@ static int env__newindex(lua_State *L) {
             }
             return 0;
         }
-        return luaL_error(L, "expected string or string[] of variable names to unset when key is nil. Received a value of type: %s", lua_typename(L, lua_type(L, 3)));
+        return luaL_error(L, "expected string or string[] of variable names to unset when key is a table. Received a value of type: %s", lua_typename(L, lua_type(L, 3)));
     }
 
     // CASE 2: normal assignment env["KEY"] = value
