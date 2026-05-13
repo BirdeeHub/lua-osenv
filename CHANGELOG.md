@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.2](https://github.com/BirdeeHub/lua-osenv/compare/v1.0.1...v1.0.2) (2026-05-13)
+
+
+### Bug Fixes
+
+* **error message:** error message explains special syntax incorrectly ([871075d](https://github.com/BirdeeHub/lua-osenv/commit/871075dba92bcddc835c6809070022ae08ae0ae3))
+* **error message:** error message explains special syntax incorrectly ([e699818](https://github.com/BirdeeHub/lua-osenv/commit/e6998185da010f8590aff465e186560daadebea9))
+* **mass remove:** env[{}] = { "varnames", "to", "remove" } ([67c5e28](https://github.com/BirdeeHub/lua-osenv/commit/67c5e28129bf7247b55ad1138532c39155679b25))
+* **mass remove:** env[{}] = { "varnames", "to", "remove" } ([c7e37b7](https://github.com/BirdeeHub/lua-osenv/commit/c7e37b71941fb8db8a022cc9555c42f927086a4a))
+
 ## [1.0.1](https://github.com/BirdeeHub/lua-osenv/compare/v1.0.0...v1.0.1) (2026-05-13)
 
 
