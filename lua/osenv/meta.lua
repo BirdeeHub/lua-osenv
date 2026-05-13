@@ -16,4 +16,4 @@
 ---| fun(env?: table<string, (string|number|any)>, overwrite?: boolean):(table<string, string>|osenv)
 
 ---@type osenv
-return require('osenv')
+return require("osenv")

@@ -27,7 +27,7 @@ local test = require("gambiarra")
 if arg[1] then
 	package.cpath = pathcat(dircat(arg[1], pathmark .. ".so"), package.cpath)
 else
-	package.cpath = pathcat(dircat("./lua", pathmark .. ".so"), package.cpath)
+	package.cpath = pathcat(dircat(here .. "lua", pathmark .. ".so"), package.cpath)
 end
 
 ---
