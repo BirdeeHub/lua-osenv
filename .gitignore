@@ -1,0 +1,6 @@
+**/result
+**/result-*
+**/repl-result-*
+**/.cache
+lua/osenv.so
+**/compile_commands.json
