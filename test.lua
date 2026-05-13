@@ -51,10 +51,34 @@ test("osenv: get and set with various types", function()
 			return "teststring"
 		end,
 	})
+	osenv.TEST__CALL__TOSTRING = setmetatable({}, {
+		__tostring = setmetatable({}, {
+			__call = function()
+				return "teststring"
+			end,
+		}),
+	})
+	osenv.TEST__CALL__CALL__TOSTRING = setmetatable({ val = 0 }, {
+		__tostring = setmetatable({ val = 1 }, {
+			__call = setmetatable({ val = 2 }, {
+				__call = function(self, og)
+					return "teststring"..tostring(self.val)..tostring(og.val)
+				end,
+			}),
+		}),
+	})
 	osenv({ EXTRA_TEST = "extra" })
 	ok(eq(osenv.REBUILD_TEST, "testvar"), "should read back string env var")
 	ok(eq(osenv.TEST_1, "1"), "should read back number env var as string")
 	ok(eq(osenv.TEST__TOSTRING, "teststring"), "should use __tostring metamethod")
+	ok(
+		eq(osenv.TEST__CALL__TOSTRING, "teststring"),
+		"should use __tostring metamethod even if it is a table with a __call metamethod"
+	)
+	ok(
+		eq(osenv.TEST__CALL__CALL__TOSTRING, "teststring20"),
+		"should use __tostring metamethod even if it is a table with a __call metamethod with a __call metamethod"
+	)
 	ok(osenv.HAHAHAHA == nil, "should return nil for missing env var")
 	ok(eq(osenv.EXTRA_TEST, "extra"), "function should append by default")
 	local env = osenv()
