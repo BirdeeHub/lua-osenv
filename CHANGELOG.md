@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.4](https://github.com/BirdeeHub/lua-osenv/compare/v1.0.3...v1.0.4) (2026-05-13)
+
+
+### Bug Fixes
+
+* **metamethod:** handle __tostring better ([fbf41ea](https://github.com/BirdeeHub/lua-osenv/commit/fbf41ea1ea63c3b212078a3f1b1fd9dde26e298f))
+* **metamethod:** handle __tostring better ([390327b](https://github.com/BirdeeHub/lua-osenv/commit/390327b74ba7c0372e1c52491fb0f248eaf8a2bd))
+
 ## [1.0.3](https://github.com/BirdeeHub/lua-osenv/compare/v1.0.2...v1.0.3) (2026-05-13)
 
 
