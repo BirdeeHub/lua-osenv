@@ -17,9 +17,9 @@ static void clear_process_env(void) {
         if (!eq || eq == p)
             continue;
 
-        char key[32768];
         size_t len = (size_t)(eq - p);
 
+        char key[len + 1];
         memcpy(key, p, len);
         key[len] = '\0';
 
