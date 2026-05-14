@@ -14,6 +14,8 @@ A `vim.env` polyfill with extra features.
 luarocks install osenv
 ```
 
+Supports all platforms, including Windows.
+
 ### Using Nix
 
 * Flake or flakeless support, both methods return according to the [flake outputs schema](https://wiki.nixos.org/wiki/Flakes).
@@ -24,6 +26,7 @@ luarocks install osenv
 
 Requires a C compiler (GCC, Clang, MinGW). If not gcc, set `CC` as well.
 Run from the root of the repository.
+The makefile will not work for MSVC, but the luarocks MSVC backend will work.
 
 If you don't know where your Lua headers are, find them with:
 
