@@ -53,10 +53,21 @@ package.cpath = package.cpath .. ";/path/to/osenv/lib/?.so"
 ---@module 'osenv.meta'
 os.env = require("osenv")
 
+-- with no arguments, returns the current environment
+local oldenv = os.env()
+for k, v in pairs(oldenv) do
+    print(k.."="..v)
+end
+
 -- set the variable
-os.env.MY_VAR = "somevalue"
-os.env.MY_NUMBER_VAR = 1
-os.env.MY_META_VAR = setmetatable({}, { __tostring = function(self) return "my meta var" end })
+os.env.MY_VAR = "somevalue" -- (via __newindex)
+os.env { -- (via __call)
+    PATH = os.env.PATH..":/home/"..os.env.USER.."/.bin",
+    HOME = "/home/"..os.env.USER,
+    EXTRA_VAR = "extra"
+    MY_NUMBER_VAR = 1,
+    MY_META_VAR = setmetatable({}, { __tostring = function(self) return "my meta var" end })
+}
 
 -- get the variable (always a string value, nil if unset)
 print(os.env.MY_VAR)
@@ -66,25 +77,14 @@ print(os.env.MY_META_VAR)
 -- unset the variable
 os.env.MY_VAR = nil
 
----Special mass unset syntax:
-os.env[{}] = { "MY_NUMBER_VAR", "MY_META_VAR" }
+-- set only if not already set (via __newindex)
+os.env[{"MY_VAR"}] = "somevalue" -- no-op if MY_VAR exists
 
--- with no arguments, returns the current environment
-local current_env = os.env()
-for k, v in pairs(current_env) do
-    print(k.."="..v)
-end
+-- set only if not already set (via __call)
+os.env({ [{"MY_VAR"}] = "somevalue" }) -- no-op if MY_VAR exists
 
-local new_env_vars = {
-    PATH = os.env.PATH..":/home/"..os.env.USER.."/.bin",
-    HOME = "/home/"..os.env.USER,
-    EXTRA_VAR = "extra"
-}
+-- Special mass unset syntax:
+os.env[{}] = { "MY_NUMBER_VAR", "MY_META_VAR" } -- (this one only works for __index)
 
-os.env(new_env_vars) -- add the variables to the current environment
-
-for k, v in pairs(new_env_vars) do
-    current_env[k] = v
-end
-os.env(current_env, true) -- OVERWRITE the current environment (careful!)
+os.env(oldenv, true) -- OVERWRITE the current environment (careful!)
 ```

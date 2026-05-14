@@ -64,12 +64,17 @@ static int env_unset(lua_State *L, const char *key) {
     return 0;
 }
 
-static int env_set(lua_State *L, const char *key, const char *val) {
+static int env_set(lua_State *L, const char *key, const char *val, const int force) {
 #ifdef _WIN32
+    if (!force) {
+        DWORD ret = GetEnvironmentVariableA(key, NULL, 0);
+        if (ret > 0) return 0;
+        if (GetLastError() != ERROR_ENVVAR_NOT_FOUND) return 0;
+    }
     if (!SetEnvironmentVariableA(key, val))
         return luaL_error(L, "failed to set env var");
 #else
-    if (setenv(key, val, 1) != 0)
+    if (setenv(key, val, force) != 0)
         return luaL_error(L, "failed to set env var");
 #endif
     return 0;
@@ -104,9 +109,7 @@ static int env_get_all(lua_State *L) {
 }
 
 static int get_meta(lua_State *L, const char *name, int idx) {
-    if (!lua_getmetatable(L, idx)) return 0;
-    lua_getfield(L, -1, name);
-    lua_remove(L, -2);
+    if (!luaL_getmetafield(L, idx, name)) return 0;
     int type = lua_type(L, -1);
     if (type == LUA_TFUNCTION) {
         return 1;
@@ -124,11 +127,58 @@ static int get_meta(lua_State *L, const char *name, int idx) {
     return 0;
 }
 
+static int call_tostring(lua_State *L) {
+    int count = get_meta(L, "__tostring", -1);
+    if (count == 1) {
+        lua_insert(L, -2);
+        lua_call(L, 1, 1);
+        return 1;
+    } else if (count == 2) {
+        lua_insert(L, -3);
+        lua_insert(L, -3);
+        lua_call(L, 2, 1);
+        return 1;
+    }
+    return 0;
+}
+
+static int env_assign(lua_State *L, const char *key, int respect) {
+    const int vt = lua_type(L, -1);
+    if (vt == LUA_TNIL) {
+        return env_unset(L, key);
+    } else if (vt == LUA_TSTRING || vt == LUA_TNUMBER) {
+        return env_set(L, key, lua_tostring(L, -1), !respect);
+    } else if (call_tostring(L)) {
+        return env_set(L, key, luaL_checkstring(L, -1), !respect);
+    } else {
+        return luaL_error(L, "env values must be nil to unset, or be strings or numbers, or have a __tostring metamethod. Received a value of type: %s", lua_typename(L, vt));
+    }
+    return 0;
+}
+
 static int env__newindex(lua_State *L) {
-    static const char *const errmsg = "env values must be nil to unset, or be strings or numbers, or have a __tostring metamethod. Received a value of type: %s";
     lua_settop(L, 3);
     // CASE 1: bulk unset via env[{}] = {...} or env[{}] = "VAR"
+    // CASE 2: set if unset via env[{"KEY"}] = "VAR"
     if (lua_istable(L, 2)) {
+        lua_pushinteger(L, 1);
+        lua_gettable(L, 2);
+        int type = lua_type(L, -1);
+        if (type != LUA_TNIL) {
+            if (type == LUA_TSTRING) {
+                const char *key = lua_tostring(L, -1);
+                lua_pop(L, 1);
+                return env_assign(L, key, 1);
+            } else if (call_tostring(L)) {
+                const char *key = luaL_checkstring(L, -1);
+                lua_pop(L, 1);
+                return env_assign(L, key, 1);
+            } else {
+                return luaL_error(L, "", lua_typename(L, lua_type(L, -1)));
+            }
+        } else {
+            lua_pop(L, 1);
+        }
         if (lua_type(L, 3) == LUA_TSTRING) {
             const char *key = lua_tostring(L, 3);
             return env_unset(L, key);
@@ -144,30 +194,8 @@ static int env__newindex(lua_State *L) {
         }
         return luaL_error(L, "expected string or string[] of variable names to unset when key is a table. Received a value of type: %s", lua_typename(L, lua_type(L, 3)));
     }
-
-    // CASE 2: normal assignment env["KEY"] = value
-    const char *key = luaL_checkstring(L, 2);
-    const int vt = lua_type(L, 3);
-    if (vt == LUA_TNIL) {
-        return env_unset(L, key);
-    } else if (vt == LUA_TSTRING || vt == LUA_TNUMBER) {
-        return env_set(L, key, lua_tostring(L, 3));
-    } else {
-        int count = get_meta(L, "__tostring", 3);
-        if (count == 1) {
-            lua_insert(L, -2);
-            lua_call(L, 1, 1);
-            return env_set(L, key, luaL_checkstring(L, -1));
-        } else if (count == 2) {
-            lua_insert(L, -3);
-            lua_insert(L, -3);
-            lua_call(L, 2, 1);
-            return env_set(L, key, luaL_checkstring(L, -1));
-        } else {
-            return luaL_error(L, errmsg, lua_typename(L, vt));
-        }
-    }
-    return 0;
+    // CASE 3: normal assignment env["KEY"] = value
+    return env_assign(L, luaL_checkstring(L, 2), 0);
 }
 
 static int env__index(lua_State *L) {
@@ -197,24 +225,29 @@ static int env__call(lua_State *L) {
 
     lua_pushnil(L);
     while (lua_next(L, 2) != 0) {
-        const char *key = luaL_checkstring(L, -2);
-        int vt = lua_type(L, -1);
-        if (vt == LUA_TSTRING || vt == LUA_TNUMBER) {
-            env_set(L, key, lua_tostring(L, -1));
-        } else {
-            int count = get_meta(L, "__tostring", 3);
-            if (count == 1) {
-                lua_insert(L, -2);
-                lua_call(L, 1, 1);
-                env_set(L, key, luaL_checkstring(L, -1));
-            } else if (count == 2) {
-                lua_insert(L, -3);
-                lua_insert(L, -3);
-                lua_call(L, 2, 1);
-                env_set(L, key, luaL_checkstring(L, -1));
+        // CASE 1: set if unset via env({ [{"KEY"}] = "VAL" })
+        if (lua_istable(L, -2)) {
+            lua_pushinteger(L, 1);
+            lua_gettable(L, -3);
+            int type = lua_type(L, -1);
+            if (type != LUA_TNIL) {
+                if (type == LUA_TSTRING) {
+                    const char *key = lua_tostring(L, -1);
+                    lua_pop(L, 1);
+                    env_assign(L, key, 1);
+                } else if (call_tostring(L)) {
+                    const char *key = luaL_checkstring(L, -1);
+                    lua_pop(L, 1);
+                    env_assign(L, key, 1);
+                } else {
+                    return luaL_error(L, "Key for setting if unset must be convertable to a string, but received %s", lua_typename(L, lua_type(L, -1)));
+                }
             } else {
-                luaL_error(L, "env values must be strings or numbers, or have a __tostring metamethod. Received a value of type: %s", lua_typename(L, vt));;
+                return luaL_error(L, "Setting only if unset requires a key as in { [{\"KEY\"}] = \"value\" }");
             }
+        } else {
+            // CASE 2: normal assignment env({ KEY = "VAL" })
+            env_assign(L, luaL_checkstring(L, -2), 0);
         }
         lua_pop(L, 1);
     }
