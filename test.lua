@@ -32,15 +32,6 @@ end
 
 ---
 
-test("osenv: environment clearing and restoration", function()
-	local osenv = require("osenv")
-	local oldenv = osenv()
-	ok(type(oldenv) == "table", "osenv() should return a table")
-	osenv({}, true)
-	ok(next(osenv()) == nil, "env should be empty after osenv({}, true)")
-	osenv(oldenv)
-end)
-
 test("osenv: get and set with various types", function()
 	local osenv = require("osenv")
 	local oldenv = osenv()
@@ -122,6 +113,15 @@ test("set if unset tests __call", function()
 	ok(os.getenv("TESTVARIABLE") == "SUCCESS!", "existing var should be overwritten by normal __call set")
 	env(oldenv, true)
 	ok(os.getenv("TESTVARIABLE2") == nil and os.getenv("TESTVARIABLE") == nil, "both vars should be nil after restore")
+end)
+
+test("osenv: environment clearing and restoration", function()
+	local osenv = require("osenv")
+	local oldenv = osenv()
+	ok(type(oldenv) == "table", "osenv() should return a table")
+	osenv({}, true)
+	ok(next(osenv()) == nil, "env should be empty after osenv({}, true)")
+	osenv(oldenv)
 end)
 
 ---

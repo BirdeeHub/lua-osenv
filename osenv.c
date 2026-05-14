@@ -6,7 +6,7 @@
 #include <windows.h>
 #endif
 
-static void clear_process_env(void) {
+static void clear_process_env(lua_State *L) {
 #ifdef _WIN32
     LPCH env = GetEnvironmentStringsA();
     if (!env) return;
@@ -19,11 +19,17 @@ static void clear_process_env(void) {
 
         size_t len = (size_t)(eq - p);
 
-        char key[len + 1];
+        char *key = (char *)malloc(len + 1);
+        if (!key) continue;
         memcpy(key, p, len);
         key[len] = '\0';
 
         SetEnvironmentVariableA(key, NULL);
+        // sync CRT
+        if (_putenv_s(key, "") != 0)
+            luaL_error(L, "failed to sync CRT env (putenv)");
+
+        free(key);
     }
     FreeEnvironmentStringsA(env);
 #else
@@ -57,6 +63,9 @@ static int env_unset(lua_State *L, const char *key) {
 #ifdef _WIN32
     if (!SetEnvironmentVariableA(key, NULL))
         return luaL_error(L, "failed to unset env var");
+    // sync CRT
+    if (_putenv_s(key, "") != 0)
+        return luaL_error(L, "failed to sync CRT env (putenv)");
 #else
     if (unsetenv(key) != 0)
         return luaL_error(L, "failed to unset env var");
@@ -73,6 +82,9 @@ static int env_set(lua_State *L, const char *key, const char *val, const int for
     }
     if (!SetEnvironmentVariableA(key, val))
         return luaL_error(L, "failed to set env var");
+    // sync CRT
+    if (_putenv_s(key, val) != 0)
+        return luaL_error(L, "failed to sync CRT env (putenv)");
 #else
     if (setenv(key, val, force) != 0)
         return luaL_error(L, "failed to set env var");
@@ -201,11 +213,25 @@ static int env__newindex(lua_State *L) {
 static int env__index(lua_State *L) {
     lua_settop(L, 2);
     const char *key = luaL_checkstring(L, 2);
+#ifdef _WIN32
+    DWORD size = GetEnvironmentVariableA(key, NULL, 0);
+    if (size == 0) {
+        lua_pushnil(L);
+        return 1;
+    }
+    char *buf = (char *)malloc(size);
+    if (!buf) return luaL_error(L, "out of memory");
+    GetEnvironmentVariableA(key, buf, size);
+    lua_pushstring(L, buf);
+    free(buf);
+#else
     const char *val = getenv(key);
     if (val)
         lua_pushstring(L, val);
     else
         lua_pushnil(L);
+#endif
+
     return 1;
 }
 
@@ -221,7 +247,7 @@ static int env__call(lua_State *L) {
     // env(table)
     luaL_checktype(L, 2, LUA_TTABLE);
 
-    if (nargs > 2 && lua_toboolean(L, 3)) clear_process_env();
+    if (nargs > 2 && lua_toboolean(L, 3)) clear_process_env(L);
 
     lua_pushnil(L);
     while (lua_next(L, 2) != 0) {
