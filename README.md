@@ -48,7 +48,7 @@ make build LUA_INCDIR=/path/to/lua/includes
 export LUA_CPATH="$LUA_CPATH;/path/to/osenv/lua/?.so"
 ```
 
-### Usage
+## Usage
 
 ```lua
 package.cpath = package.cpath .. ";/path/to/osenv/lib/?.so"
