@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/BirdeeHub/lua-osenv/compare/v1.1.0...v1.1.1) (2026-05-14)
+
+
+### Bug Fixes
+
+* **errors:** forgotten error message ([79e9be5](https://github.com/BirdeeHub/lua-osenv/commit/79e9be53c72df5c85a585f5430801c602f1312ef))
+* **errors:** forgotten error message ([620aa72](https://github.com/BirdeeHub/lua-osenv/commit/620aa72febf9e14e060163b51df10a447b4eab6c))
+
 ## [1.1.0](https://github.com/BirdeeHub/lua-osenv/compare/v1.0.4...v1.1.0) (2026-05-14)
 
 
