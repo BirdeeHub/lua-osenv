@@ -13,8 +13,8 @@
 ---names must be valid environment variable names
 ---values may be strings, numbers, or nil (or anything with a __tostring metamethod)
 ---@alias osenv
----| table<string|{ [1]?: string }, (string|number|nil|any)>
----| fun(env?: table<string|{ [1]: string }, (string|number|any)>, overwrite?: boolean):(table<string, string>|osenv)
+---| table<string|{ [1]?: string }, string|number|nil|any>
+---| fun(env?: table<string|{ [1]: string }, string|number|any>, overwrite?: boolean):(table<string, string>|osenv)
 
 ---@type osenv
 return require("osenv")
