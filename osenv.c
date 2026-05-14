@@ -158,9 +158,8 @@ static int env_assign(lua_State *L, const char *key, int respect) {
 
 static int env__newindex(lua_State *L) {
     lua_settop(L, 3);
-    // CASE 1: bulk unset via env[{}] = {...} or env[{}] = "VAR"
-    // CASE 2: set if unset via env[{"KEY"}] = "VAR"
     if (lua_istable(L, 2)) {
+        // CASE 1: set if unset via env[{"KEY"}] = "VAR"
         lua_pushinteger(L, 1);
         lua_gettable(L, 2);
         int type = lua_type(L, -1);
@@ -174,9 +173,10 @@ static int env__newindex(lua_State *L) {
                 lua_pop(L, 1);
                 return env_assign(L, key, 1);
             } else {
-                return luaL_error(L, "", lua_typename(L, lua_type(L, -1)));
+                return luaL_error(L, "Key for setting if unset must be convertable to a string, but received %s", lua_typename(L, lua_type(L, -1)));
             }
         } else {
+            // CASE 2: bulk unset via env[{}] = {...} or env[{}] = "VAR"
             lua_pop(L, 1);
         }
         if (lua_type(L, 3) == LUA_TSTRING) {
