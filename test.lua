@@ -80,7 +80,7 @@ test("osenv: get and set with various types", function()
 		"should use __tostring metamethod even if it is a table with a __call metamethod with a __call metamethod"
 	)
 	ok(osenv.HAHAHAHA == nil, "should return nil for missing env var")
-	ok(eq(osenv.EXTRA_TEST, "extra"), "function should append by default")
+	ok(eq(osenv.EXTRA_TEST, "extra"), "osenv({...}) should set env vars, (and does not remove the other ones by default)")
 	local env = osenv()
 	ok(eq(env.REBUILD_TEST, "testvar"), "osenv() table should contain REBUILD_TEST")
 	ok(eq(env.TEST_1, "1"), "osenv() table should contain TEST_1")
@@ -94,11 +94,34 @@ test("require('osenv') tests", function()
 	env.TESTVARIABLE = "HELLO"
 	ok(env.TESTVARIABLE == os.getenv("TESTVARIABLE"), "osenv should get the env var")
 	env[{}] = "TESTVARIABLE"
-	ok(env.TESTVARIABLE == nil, "osenv should be removed (via the special syntax)")
+	ok(env.TESTVARIABLE == nil, "env var should be unset (env[{}] = 'NAME')")
 	env.TESTVARIABLE = "HELLO"
 	env[{}] = { "TESTVARIABLE" }
-	ok(env.TESTVARIABLE == nil, "osenv should be removed (via the special syntax again)")
-	ok(os.getenv("TESTVARIABLE") == nil, "os.getenv('thevar') should be removed just like the env var")
+	ok(env.TESTVARIABLE == nil, "env var should be unset (env[{}] = {'NAME'})")
+	ok(os.getenv("TESTVARIABLE") == nil, "os.getenv('TESTVARIABLE') should also return nil")
+end)
+test("set if unset tests __index", function()
+	local env = require("osenv")
+	env.TESTVARIABLE = "HELLO"
+	env[{"TESTVARIABLE"}] = "SHOULD NOT BE ADDED"
+	ok(os.getenv("TESTVARIABLE") == "HELLO", "existing var should not be overwritten by set-if-unset")
+	env["TESTVARIABLE"] = "OVERWRITTEN"
+	ok(os.getenv("TESTVARIABLE") == "OVERWRITTEN", "existing var should be overwritten by direct assignment")
+	env.TESTVARIABLE = nil
+	ok(os.getenv("TESTVARIABLE") == nil, "var should be nil after unset")
+end)
+test("set if unset tests __call", function()
+	local env = require("osenv")
+	local oldenv = env()
+	env.TESTVARIABLE = "HELLO"
+	env.TESTVARIABLE2 = "HELLO AGAIN"
+	env { [{"TESTVARIABLE"}] = "SHOULD NOT BE ADDED" }
+	ok(os.getenv("TESTVARIABLE") == "HELLO", "existing var should not be overwritten by set-if-unset via __call")
+	env { ["TESTVARIABLE"] = "SUCCESS!" }
+	ok(os.getenv("TESTVARIABLE2") == "HELLO AGAIN", "other vars should not have been affected")
+	ok(os.getenv("TESTVARIABLE") == "SUCCESS!", "existing var should be overwritten by normal __call set")
+	env(oldenv, true)
+	ok(os.getenv("TESTVARIABLE2") == nil and os.getenv("TESTVARIABLE") == nil, "both vars should be nil after restore")
 end)
 
 ---
