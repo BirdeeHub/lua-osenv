@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0](https://github.com/BirdeeHub/lua-osenv/compare/v1.0.4...v1.1.0) (2026-05-14)
+
+
+### Features
+
+* **defaults:** env[{"KEY"}] = "VAL" to set only if unset ([ec8b48b](https://github.com/BirdeeHub/lua-osenv/commit/ec8b48b75baf202734b1e5d55bd9661175495e8e))
+* **defaults:** env[{"KEY"}] = "VAL" to set only if unset ([7722bf9](https://github.com/BirdeeHub/lua-osenv/commit/7722bf9400b152a2d6b0115e45ce7749c131ecb7))
+
+
+### Bug Fixes
+
+* **metamethod:** handle __tostring better ([b117004](https://github.com/BirdeeHub/lua-osenv/commit/b117004f9781bbd3cc478bfc351da03b915f1e9a))
+* **metamethod:** handle __tostring better ([7430f06](https://github.com/BirdeeHub/lua-osenv/commit/7430f0608923316b4d7fc18e52d7278c7ea90954))
+
 ## [1.0.4](https://github.com/BirdeeHub/lua-osenv/compare/v1.0.3...v1.0.4) (2026-05-13)
 
 
