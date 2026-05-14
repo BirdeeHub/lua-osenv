@@ -10,13 +10,50 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
       - name: Install Nix
+        if: runner.os != 'Windows'
         uses: DeterminateSystems/nix-installer-action@main
+
       - name: Run checks
+        if: runner.os != 'Windows'
         run: nix flake check -Lvv --log-format bar-with-logs
+
+      - name: Set up windows msvc compiler
+        uses: step-security/msvc-dev-cmd@v1
+      - name: Setup Lua (only 1 version because windows)
+        if: runner.os == 'Windows'
+        uses: leafo/gh-actions-lua@v13
+        with:
+          luaVersion: "5.4"
+
+      - name: Install LuaRocks
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          Invoke-WebRequest `
+            -Uri "https://luarocks.github.io/luarocks/releases/luarocks-3.13.0-windows-64.zip" `
+            -OutFile "luarocks.zip"
+
+          $dir = Join-Path $env:RUNNER_TEMP "luarocks"
+          New-Item -ItemType Directory -Force -Path "$dir"
+          Expand-Archive luarocks.zip -DestinationPath "$dir"
+          $root = Join-Path $dir "luarocks-3.13.0-windows-64"
+          $link = "./.lua/bin"
+          New-Item -ItemType SymbolicLink -Target "$root/luarocks.exe" -Path "$link/luarocks.exe"
+
+      - name: Build via luarocks
+        if: runner.os == 'Windows'
+        run: |
+          tree /f .
+          luarocks make --verbose
+          tree /f .
+      - name: Test via luarocks
+        if: runner.os == 'Windows'
+        run: luarocks test --verbose
