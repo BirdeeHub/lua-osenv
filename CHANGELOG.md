@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/BirdeeHub/lua-osenv/compare/v1.1.1...v1.1.2) (2026-05-14)
+
+
+### Bug Fixes
+
+* **windows:** ... ([018a185](https://github.com/BirdeeHub/lua-osenv/commit/018a185cad22eeb8b57558da1510eb0aedb1ec4d))
+
 ## [1.1.1](https://github.com/BirdeeHub/lua-osenv/compare/v1.1.0...v1.1.1) (2026-05-14)
 
 
